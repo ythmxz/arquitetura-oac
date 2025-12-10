@@ -139,53 +139,147 @@ public class Assembler {
 	 */
 	protected void proccessCommand(String[] tokens) {
 		String command = tokens[0];
-		String parameter ="";
+		String parameter1 = "";
 		String parameter2 = "";
+		String parameter3 = "";
+
 		int commandNumber = findCommandNumber(tokens);
-		if (commandNumber == 0) { //must to proccess an add command
-			parameter = tokens[1];
-			parameter = "&"+parameter; //this is a flag to indicate that is a position in memory
-		}
-		if (commandNumber == 1) { //must to proccess an sub command
-			parameter = tokens[1];
-			parameter = "&"+parameter;//this is a flag to indicate that is a position in memory		
-		}
-		if (commandNumber == 2) { //must to proccess an jmp command
-			parameter = tokens[1];
-			parameter = "&"+parameter;//this is a flag to indicate that is a position in memory
-		}
-		if (commandNumber == 3) { //must to proccess an jz command
-			parameter = tokens[1];
-			parameter = "&"+parameter;//this is a flag to indicate that is a position in memory
-		}
-		if (commandNumber == 4) { //must to proccess an jn command
-			parameter = tokens[1];
-			parameter = "&"+parameter;//this is a flag to indicate that is a position in memory
-		}
-		if (commandNumber == 5) { //must to proccess an read command
-			parameter = tokens[1];
-			parameter = "&"+parameter;//this is a flag to indicate that is a position in memory
-		}
-		if (commandNumber == 6) { //must to proccess an store command
-			parameter = tokens[1];
-			parameter = "&"+parameter;//this is a flag to indicate that is a position in memory
-		}
-		if (commandNumber == 7) { //must to proccess an ldi command
-			parameter = tokens[1];
-		}
-		if (commandNumber == 8) { //must to proccess an inc command
-			
-		}
-		if (commandNumber == 9) { //must to proccess an moveRegReg command
-			parameter = tokens[1];
+		if (commandNumber == 0) { //add_rr
+			parameter1 = tokens[1]; //a register token already has "%"
 			parameter2 = tokens[2];
 		}
+		if (commandNumber == 1) { //add_mr
+			parameter1 = tokens[1];
+			parameter1 = "&"+parameter1; //this is a flag to indicate that is a position in memory
+			parameter2 = tokens[2];			
+		}
+		if (commandNumber == 2) { //add_rm
+			parameter1 = tokens[1];			
+			parameter2 = tokens[2];
+			parameter2 = "&"+parameter2;			
+		}
+		if (commandNumber == 3) { //add_imm
+			parameter1 = tokens[1];	//being a constant, it has no prefix
+			parameter2 = tokens[2];
+		}
+
+
+
+		if (commandNumber == 4) { //sub_rr
+			parameter1 = tokens[1]; //a register token already has "%"
+			parameter2 = tokens[2];
+		}
+		if (commandNumber == 5) { //sub_mr
+			parameter1 = tokens[1];
+			parameter1 = "&"+parameter1; //this is a flag to indicate that is a position in memory
+			parameter2 = tokens[2];			
+		}
+		if (commandNumber == 6) { //sub_rm
+			parameter1 = tokens[1];			
+			parameter2 = tokens[2];
+			parameter2 = "&"+parameter2;			
+		}
+		if (commandNumber == 7) { //sub_imm
+			parameter1 = tokens[1];	//being a constant, it has no prefix
+			parameter2 = tokens[2];
+		}
+
+
+		
+		if (commandNumber == 8) { //imul_mr
+			parameter1 = tokens[1];
+			parameter1 = "&"+parameter1; //this is a flag to indicate that is a position in memory
+			parameter2 = tokens[2];			
+		}
+		if (commandNumber == 9) { //imul_rm
+			parameter1 = tokens[1];			
+			parameter2 = tokens[2];
+			parameter2 = "&"+parameter2;			
+		}
+		if (commandNumber == 10) { //imul_rr
+			parameter1 = tokens[1]; //a register token already has "%"
+			parameter2 = tokens[2];
+		}
+
+
+
+		if (commandNumber == 11) { //move_mr
+			parameter1 = tokens[1];
+			parameter1 = "&"+parameter1; //this is a flag to indicate that is a position in memory
+			parameter2 = tokens[2];			
+		}
+		if (commandNumber == 12) { //move_rm
+			parameter1 = tokens[1];			
+			parameter2 = tokens[2];
+			parameter2 = "&"+parameter2;			
+		}
+		if (commandNumber == 13) { //move_rr
+			parameter1 = tokens[1]; //a register token already has "%"
+			parameter2 = tokens[2];
+		}
+		if (commandNumber == 14) { //move_imm
+			parameter1 = tokens[1];	//being a constant, it has no prefix
+			parameter2 = tokens[2];
+		}
+
+
+
+		if (commandNumber == 15) { //inc_r
+			parameter1 = tokens[1];
+		}
+
+		if (commandNumber == 16) { //jmp
+			parameter1 = tokens[1];
+			parameter1 = "&"+parameter1;
+		}
+
+		if (commandNumber == 17) { //jn
+			parameter1 = tokens[1];
+			parameter1 = "&"+parameter1;
+		}
+
+		if (commandNumber == 18) { //jz
+			parameter1 = tokens[1];
+			parameter1 = "&"+parameter1;
+		}
+
+		if (commandNumber == 19) { //jeq
+			parameter1 = tokens[1];
+			parameter2 = tokens[2];
+			parameter3 = tokens[3];
+			parameter3 = "&"+parameter3;
+		}
+
+		if (commandNumber == 20) { //jneq
+			parameter1 = tokens[1];
+			parameter2 = tokens[2];
+			parameter3 = tokens[3];
+			parameter3 = "&"+parameter3;
+		}
+
+		if (commandNumber == 21) { //jgt
+			parameter1 = tokens[1];
+			parameter2 = tokens[2];
+			parameter3 = tokens[3];
+			parameter3 = "&"+parameter3;
+		}
+
+		if (commandNumber == 22) { //jlw
+			parameter1 = tokens[1];
+			parameter2 = tokens[2];
+			parameter3 = tokens[3];
+			parameter3 = "&"+parameter3;
+		}
+
 		objProgram.add(Integer.toString(commandNumber));
-		if (!parameter.isEmpty()) {
-			objProgram.add(parameter);
+		if (!parameter1.isEmpty()) {
+			objProgram.add(parameter1);
 		}
 		if (!parameter2.isEmpty()) {
 			objProgram.add(parameter2);
+		}
+		if (!parameter3.isEmpty()) {
+			objProgram.add(parameter3);
 		}
 	}
 	
@@ -201,27 +295,113 @@ public class Assembler {
 	private int findCommandNumber(String[] tokens) {
 		int p = commands.indexOf(tokens[0]);
 		if (p<0){ //the command isn't in the list. So it must have multiple formats
+			if ("add".equals(tokens[0])) //the command is a add
+				p = proccessAdd(tokens);
+			if ("sub".equals(tokens[0])) //the command is a sub
+				p = proccessSub(tokens);
+			if ("imul".equals(tokens[0])) //the command is a imul
+				p = proccessImul(tokens);
 			if ("move".equals(tokens[0])) //the command is a move
 				p = proccessMove(tokens);
 		}
 		return p;
 	}
 
-	/**
-	 * This method proccess a move command.
-	 * It must have differents formats, meaning differents internal commands
-	 * @param tokens
-	 * @return
-	 */
+	//This method proccess an add command.
+	private int proccessAdd(String[] tokens) {
+		String p1 = tokens[1];
+		String p2 = tokens[2];
+		int p=-1;
+		
+		if ((p1.startsWith("%"))&&(p2.startsWith("%"))) { //add_rr
+			p = commands.indexOf("add_rr");
+		}
+
+		else if ((variables.contains(p1))&&(p2.startsWith("%"))) { //add_mr
+			p = commands.indexOf("add_mr");
+		}
+
+		else if ((p1.startsWith("%"))&&(variables.contains(p2))) { //add_rm
+			p = commands.indexOf("add_rm");
+		}
+
+		else if ((!variables.contains(p1))&&(p2.startsWith("%"))) { //add_imm
+			p = commands.indexOf("add_imm");
+		}
+		
+		return p;
+	}
+
+	//This method proccess a sub command.
+	private int proccessSub(String[] tokens) {
+		String p1 = tokens[1];
+		String p2 = tokens[2];
+		int p=-1;
+		
+		if ((p1.startsWith("%"))&&(p2.startsWith("%"))) { //sub_rr
+			p = commands.indexOf("sub_rr");
+		}
+
+		else if ((variables.contains(p1))&&(p2.startsWith("%"))) { //sub_mr
+			p = commands.indexOf("sub_mr");
+		}
+
+		else if ((p1.startsWith("%"))&&(variables.contains(p2))) { //sub_rm
+			p = commands.indexOf("sub_rm");
+		}
+
+		else if ((!variables.contains(p1))&&(p2.startsWith("%"))) { //sub_imm
+			p = commands.indexOf("sub_imm");
+		}
+		
+		return p;
+	}
+
+	//This method proccess an imul command.
+	private int proccessImul(String[] tokens) {
+		String p1 = tokens[1];
+		String p2 = tokens[2];
+		int p=-1;
+		
+		if ((p1.startsWith("%"))&&(p2.startsWith("%"))) { //imul_rr
+			p = commands.indexOf("imul_rr");
+		}
+
+		else if ((variables.contains(p1))&&(p2.startsWith("%"))) { //imul_mr
+			p = commands.indexOf("imul_mr");
+		}
+
+		else if ((p1.startsWith("%"))&&(variables.contains(p2))) { //imul_rm
+			p = commands.indexOf("imul_rm");
+		}
+				
+		return p;
+	}
+
+	//This method proccess a move command.	 
 	private int proccessMove(String[] tokens) {
 		String p1 = tokens[1];
 		String p2 = tokens[2];
 		int p=-1;
-		if ((p1.startsWith("%"))&&(p2.startsWith("%"))) { //this is a moveRegReg comand
-			p = commands.indexOf("moveRegReg");
+		
+		if ((p1.startsWith("%"))&&(p2.startsWith("%"))) { //move_rr
+			p = commands.indexOf("move_rr");
 		}
+
+		else if ((variables.contains(p1))&&(p2.startsWith("%"))) { //move_mr
+			p = commands.indexOf("move_mr");
+		}
+
+		else if ((p1.startsWith("%"))&&(variables.contains(p2))) { //move_rm
+			p = commands.indexOf("move_rm");
+		}
+
+		else if ((!variables.contains(p1))&&(p2.startsWith("%"))) { //move_imm
+			p = commands.indexOf("move_imm");
+		}
+		
 		return p;
-	}
+	}	
 
 	/**
 	 * This method creates the executable program from the object program

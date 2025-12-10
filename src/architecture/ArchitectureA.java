@@ -33,10 +33,10 @@ public class Architecture {
 	private Register StkTOP;
 	private Register StkBOT;
 
-	private Register RPG0;
-	private Register RPG1;
-	private Register RPG2;
-	private Register RPG3;
+	private Register REG0;
+	private Register REG1;
+	private Register REG2;
+	private Register REG3;
 
 	private Register Flags;
 
@@ -61,10 +61,10 @@ public class Architecture {
 		StkTOP = new Register("StkTOP", intbus1, intbus1);
 		StkBOT = new Register("StkBOT", intbus1, intbus1);
 		
-		RPG0 = new Register("RPG0", intbus1, intbus1);
-		RPG1 = new Register ("RPG1", intbus1, intbus1);
-		RPG2 = new Register("RPG2", intbus1, intbus1);
-		RPG3 = new Register ("RPG3", intbus1, intbus1);
+		REG0 = new Register("REG0", intbus1, intbus1);
+		REG1 = new Register ("REG1", intbus1, intbus1);
+		REG2 = new Register("REG2", intbus1, intbus1);
+		REG3 = new Register ("REG3", intbus1, intbus1);
 		
 		Flags = new Register(2, intbus1);
 
@@ -84,14 +84,14 @@ public class Architecture {
 	/**
 	 * This method fills the registers list inserting into them all the registers we have.
 	 * IMPORTANT!
-	 * The first register to be inserted must be the default RPG
+	 * The first register to be inserted must be the default REG
 	 */
 	private void fillRegistersList() {
 		registersList = new ArrayList<Register>();
-		registersList.add(RPG0);
-		registersList.add(RPG1);
-		registersList.add(RPG2);
-		registersList.add(RPG3);
+		registersList.add(REG0);
+		registersList.add(REG1);
+		registersList.add(REG2);
+		registersList.add(REG3);
 
 		registersList.add(PC);
 		registersList.add(IR);
@@ -151,20 +151,20 @@ public class Architecture {
 		return StkBOT;
 	}
 
-	protected Register getRPG0() {
-		return RPG0;
+	protected Register getREG0() {
+		return REG0;
 	}
 
-	protected Register getRPG1() {
-		return RPG1;
+	protected Register getREG1() {
+		return REG1;
 	}
 
-	protected Register getRPG2() {
-		return RPG2;
+	protected Register getREG2() {
+		return REG2;
 	}
 
-	protected Register getRPG3() {
-		return RPG3;
+	protected Register getREG3() {
+		return REG3;
 	}
 	
 	protected Register getFlags() {
@@ -217,9 +217,6 @@ public class Architecture {
 
 		commandsList.add("jgt");    //21
 		commandsList.add("jlw");    //22
-
-		commandsList.add("call");    //23
-		commandsList.add("ret");    //24
 	}
 
 	
@@ -823,7 +820,7 @@ public class Architecture {
 		memory.read();        // Mem(r) <- bus(ext)
 		ula.store(1);         // ULA(1) <- bus(ext)
 		ula.internalRead(1);  // ULA(1) -> bus(int)
-		statusMem.storeIn1(); // Status(1) <- bus(int)
+		statusMemory.storeIn1(); // Status(1) <- bus(int)
 
 		// pc++
 		PC.read();            // PC -> bus(int)
@@ -833,10 +830,10 @@ public class Architecture {
 		PC.store();           // PC <- bus(int)
 
 		// put the not-jump address in Status(0)
-		statusMem.storeIn0(); // Status(0) <- bus(int)
+		statusMemory.storeIn0(); // Status(0) <- bus(int)
 
 		intBus.put(Flags.getBit(1));
-		statusMem.read();
+		statusMemory.read();
 		PC.store();
 	}
 
@@ -854,7 +851,7 @@ public class Architecture {
 		memory.read();        // Mem(r) <- bus(ext)
 		ula.store(1);         // ULA(1) <- bus(ext)
 		ula.internalRead(1);  // ULA(1) -> bus(int)
-		statusMem.storeIn1(); // Status(1) <- bus(int)
+		statusMemory.storeIn1(); // Status(1) <- bus(int)
 
 		// pc++
 		PC.read();            // PC -> bus(int)
@@ -864,10 +861,10 @@ public class Architecture {
 		PC.store();           // PC <- bus(int)
 
 		// put the not-jump address in Status(0)
-		statusMem.storeIn0(); // Status(0) <- bus(int)
+		statusMemory.storeIn0(); // Status(0) <- bus(int)
 
 		intBus.put(Flags.getBit(0));
-		statusMem.read();
+		statusMemory.read();
 		PC.store();
 	}
 
@@ -931,7 +928,7 @@ public class Architecture {
 
 		// put the address in the status memory (slot 1, when the values were equal)
 		ula.internalRead(0);
-		statusMem.storeIn1();
+		statusMemory.storeIn1();
 
 		// pc++
 		PC.read();
@@ -942,16 +939,91 @@ public class Architecture {
 
 		// put the address of the next instruction in the status memory (slot 0, when the values were different)
 		PC.read();
-		statusMem.storeIn0();
+		statusMemory.storeIn0();
 
 		// jump to the address (based on the zero flag)
 		intBus.put(Flags.getBit(0));
-		statusMem.read();
+		statusMemory.read();
 		PC.store();
 	}
 
 	public void jneq(){
+		// pc++
+		PC.read();
+		ula.internalStore(1);
+		ula.inc();
+		ula.internalRead(1);
+		PC.store();
 
+		// read regA id from memory and put it on intBus
+		ula.read(1);
+		memory.read();
+		ula.store(0);
+		ula.internalRead(0);
+
+		// get the id and read the specified register's value, then store it into IR
+		demux.setValue(intBus.get());
+		registersRead();
+		IR.store();
+
+		// pc++
+		PC.read();
+		ula.internalStore(1);
+		ula.inc();
+		ula.internalRead(1);
+		PC.store();
+
+		// read regB id from memory and put it on intBus
+		ula.read(1);
+		memory.read();
+		ula.store(0);
+		ula.internalRead(0);
+
+		// get the regB id and read the specified register's value, then store it into ula(1)
+		demux.setValue(intBus.get());
+		registersRead();
+		ula.internalStore(1);
+
+		// get regA's value (from IR) and put it into ula(0)
+		IR.read();
+		ula.internalStore(0);
+
+		// perform a subtraction and update the flags register
+		ula.sub();
+		ula.internalRead(1);
+		setStatusFlags(intBus.get());
+
+		// pc++
+		PC.read();
+		ula.internalStore(1);
+		ula.inc();
+		ula.internalRead(1);
+		PC.store();
+
+		// get jump address from memory, and put it into ula(0)
+		ula.read(1);
+		memory.read();
+		ula.store(0);
+
+		// put the address in the status memory (slot 1, when the values were equal)
+		ula.internalRead(0);
+		statusMemory.storeIn0();
+
+		// pc++
+		PC.read();
+		ula.internalStore(1);
+		ula.inc();
+		ula.internalRead(1);
+		PC.store();
+
+		// put the address of the next instruction in the status memory (slot 0, when the values were equal)
+		PC.read();
+		statusMemory.storeIn1();
+
+		// jump to the address (based on the zero flag)
+		intBus.put(Flags.getBit(0));
+		statusMemory.read();
+		PC.store();
 	}
 
 	public void jgt() {
@@ -1014,7 +1086,7 @@ public class Architecture {
 
 		// put the address in the status memory (slot 1, when regA>regB)
 		ula.internalRead(0);
-		statusMem.storeIn1();
+		statusMemory.storeIn1();
 
 		// pc++
 		PC.read();
@@ -1025,11 +1097,11 @@ public class Architecture {
 
 		// put the address of the next instruction in the status memory (slot 0, when regA<=regB)
 		PC.read();
-		statusMem.storeIn0();
+		statusMemory.storeIn0();
 
 		// jump to the address (based on the negative flag)
 		intBus.put(Flags.getBit(1));
-		statusMem.read();
+		statusMemory.read();
 		PC.store();
 	}
 
@@ -1093,7 +1165,7 @@ public class Architecture {
 
 		// put the address in the status memory (slot 0, when regA>regB)
 		ula.internalRead(0);
-		statusMem.storeIn1();
+		statusMemory.storeIn1();
 
 		// pc++
 		PC.read();
@@ -1104,85 +1176,13 @@ public class Architecture {
 
 		// put the address of the next instruction in the status memory (slot 1, when regA<=regB)
 		PC.read();
-		statusMem.storeIn0();
+		statusMemory.storeIn0();
 
 		// jump to the address (based on the negative flag)
 		intBus.put(Flags.getBit(1));
-		statusMem.read();
+		statusMemory.read();
 		PC.store();
 	}
-
-	public void call() {
-		// put a -1 on ula(1)
-		REG0.read();
-		ula.internalStore(0);
-		ula.internalStore(1);
-		ula.inc();
-		ula.sub();
-
-		// decrement stktop
-		StkTOP.read();
-		ula.internalStore(0);
-		ula.add();
-		ula.internalRead(1);
-		StkTOP.store();
-
-		// pc++
-		PC.read();
-		ula.internalStore(1);
-		ula.inc();
-		ula.internalRead(1);
-		PC.store();
-
-		// get jump address from memory, store it into IR
-		ula.read(1);
-		memory.read();
-		ula.store(1);
-		ula.internalRead(1);
-		IR.store();
-
-		// send address in stktop to memory
-		StkTOP.read();
-		ula.internalStore(0);
-		ula.read(0);
-		memory.store();
-
-		// pc++
-		PC.read();
-		ula.internalStore(1);
-		ula.inc();
-		ula.internalRead(1);
-		PC.store();
-
-		// send address in pc to memory (and thus memory[stktop] <- pc)
-		PC.read();
-		ula.internalStore(0);
-		ula.read(0);
-		memory.store();
-
-		// put the address from IR into PC
-		IR.read();
-		PC.store();
-	}
-
-	public void ret() {
-		// pc <- memory[stktop]
-		StkTOP.read();
-		ula.internalStore(1);
-		ula.read(1);
-		memory.read();
-		ula.store(1);
-		ula.internalRead(1);
-		PC.store();
-
-		// stktop++
-		StkTOP.read();
-		ula.internalStore(1);
-		ula.inc();
-		ula.internalRead(1);
-		StkTOP.store();
-	}
-
 	
 	public ArrayList<Register> getRegistersList() {
 		return registersList;
@@ -1298,9 +1298,6 @@ public class Architecture {
 
 		case 21: jgt(); break;
 		case 22: jlw(); break;
-
-		case 23: call(); break;
-		case 24: ret(); break;
 
 		default: halt = true; break;
 
