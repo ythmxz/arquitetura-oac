@@ -294,15 +294,18 @@ public class Assembler {
 	 */
 	private int findCommandNumber(String[] tokens) {
 		int p = commands.indexOf(tokens[0]);
-		if (p<0){ //the command isn't in the list. So it must have multiple formats
-			if ("add".equals(tokens[0])) //the command is a add
+		if (p<0){ //the command isn't in the list. So it must have multiple formats (or is inc_r)
+			if ("add".equals(tokens[0])) //the command is an add
 				p = proccessAdd(tokens);
 			if ("sub".equals(tokens[0])) //the command is a sub
 				p = proccessSub(tokens);
-			if ("imul".equals(tokens[0])) //the command is a imul
+			if ("imul".equals(tokens[0])) //the command is an imul
 				p = proccessImul(tokens);
 			if ("move".equals(tokens[0])) //the command is a move
 				p = proccessMove(tokens);
+			if ("inc".equals(tokens[0])) //the command is an inc_r
+				p = commands.indexOf("inc_r");
+			
 		}
 		return p;
 	}
