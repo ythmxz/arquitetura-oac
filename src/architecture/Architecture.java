@@ -72,7 +72,7 @@ public class Architecture {
 
 		ula = new Ula(extbus1, intbus1);
 		
-		statusMemory = new Memory(2, extbus1);
+		statusMemory = new Memory(2, intbus1);
 		memorySize = 128;
 		memory = new Memory(memorySize, extbus1);
 		
@@ -1132,7 +1132,7 @@ public class Architecture {
 		ula.internalRead(0);
 
 		// get the id and read the specified register's value, then store it into IR
-		demux.setValue(intBus.get());
+		demux.setValue(intbus1.get());
 		registersRead();
 		IR.store();
 
@@ -1150,7 +1150,7 @@ public class Architecture {
 		ula.internalRead(0);
 
 		// get the regB id and read the specified register's value, then store it into ula(1)
-		demux.setValue(intBus.get());
+		demux.setValue(intbus1.get());
 		registersRead();
 		ula.internalStore(1);
 
@@ -1161,7 +1161,9 @@ public class Architecture {
 		// perform a subtraction and update the flags register
 		ula.sub();
 		ula.internalRead(1);
-		setStatusFlags(intBus.get());
+		setStatusFlags(intbus1.get());
+
+		System.out.println("sub = " + intbus1.get());
 
 		// pc++
 		PC.read();
@@ -1173,11 +1175,13 @@ public class Architecture {
 		// get jump address from memory, and put it into ula(0)
 		ula.read(1);
 		memory.read();
+		System.out.println("memoria (indo pro stsmem1): "+ extbus1.get());
 		ula.store(0);
 
 		// put the address in the status memory (slot 0, when regA>regB)
 		ula.internalRead(0);
-		statusMem.storeIn1();
+		System.out.println("busint (indo pro stsmem1): "+ intbus1.get());
+		statusMemory.storeIn1();
 
 		// pc++
 		PC.read();
@@ -1185,14 +1189,21 @@ public class Architecture {
 		ula.inc();
 		ula.internalRead(1);
 		PC.store();
-
+		System.out.println("busint (indo pro stsmem0): "+ intbus1.get());
+		
 		// put the address of the next instruction in the status memory (slot 1, when regA<=regB)
 		PC.read();
-		statusMem.storeIn0();
+		System.out.println("busint (indo pro stsmem0): "+ intbus1.get());
+		statusMemory.storeIn0();
 
 		// jump to the address (based on the negative flag)
-		intBus.put(Flags.getBit(1));
-		statusMem.read();
+		// System.out.println("1 stsmem0: "+statusMemory.getDataList()[0]);
+		// System.out.println("2 stsmem1: "+statusMemory.getDataList()[1]);
+		intbus1.put(Flags.getBit(1));
+		System.out.println("saida do flag negativo: "+ intbus1.get());
+		statusMemory.read();
+		System.out.println("intbus depois do statusmem read: "+ intbus1.get());
+		System.out.println("extbus depois do statusmem read: "+ extbus1.get());
 		PC.store();
 	}
 	

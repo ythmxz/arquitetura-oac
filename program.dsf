@@ -1,3 +1,4 @@
+N
 move 10 %REG0
 move 0 %REG1
 move 0 %REG2
@@ -5,3 +6,4 @@ laco:
 add %REG1 %REG2
 inc %REG1
 jlw %REG1 %REG0 laco
+move %REG2 N
