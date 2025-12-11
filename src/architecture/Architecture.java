@@ -1132,7 +1132,7 @@ public class Architecture {
 		ula.internalRead(0);
 
 		// get the id and read the specified register's value, then store it into IR
-		demux.setValue(intbus1.get());
+		demux.setValue(intBus.get());
 		registersRead();
 		IR.store();
 
@@ -1150,7 +1150,7 @@ public class Architecture {
 		ula.internalRead(0);
 
 		// get the regB id and read the specified register's value, then store it into ula(1)
-		demux.setValue(intbus1.get());
+		demux.setValue(intBus.get());
 		registersRead();
 		ula.internalStore(1);
 
@@ -1161,7 +1161,7 @@ public class Architecture {
 		// perform a subtraction and update the flags register
 		ula.sub();
 		ula.internalRead(1);
-		setStatusFlags(intbus1.get());
+		setStatusFlags(intBus.get());
 
 		// pc++
 		PC.read();
@@ -1177,7 +1177,7 @@ public class Architecture {
 
 		// put the address in the status memory (slot 0, when regA>regB)
 		ula.internalRead(0);
-		statusMemory.storeIn1();
+		statusMem.storeIn1();
 
 		// pc++
 		PC.read();
@@ -1188,11 +1188,11 @@ public class Architecture {
 
 		// put the address of the next instruction in the status memory (slot 1, when regA<=regB)
 		PC.read();
-		statusMemory.storeIn0();
+		statusMem.storeIn0();
 
 		// jump to the address (based on the negative flag)
-		intbus1.put(Flags.getBit(1));
-		statusMemory.read();
+		intBus.put(Flags.getBit(1));
+		statusMem.read();
 		PC.store();
 	}
 	
@@ -1278,6 +1278,7 @@ public class Architecture {
 	private void decodeExecute() {
 		IR.internalRead();
 		int command = intbus1.get();
+		System.out.println(intbus1.get());
 		simulationDecodeExecuteBefore(command);
 		switch (command) {
 		case 0: add_rr(); break;
@@ -1326,7 +1327,10 @@ public class Architecture {
 	private void simulationDecodeExecuteBefore(int command) {
 		System.out.println("----------BEFORE Decode and Execute phases--------------");
 		String instruction;
-		int parameter = 0;
+		int parameter1 = 0;
+		int parameter2 = 0;
+		int parameter3 = 0;
+
 		for (Register r:registersList) {
 			System.out.println(r.getRegisterName()+": "+r.getData());
 		}
@@ -1334,15 +1338,47 @@ public class Architecture {
 			instruction = commandsList.get(command);
 		else
 			instruction = "END";
-		if (hasOperands(instruction)) {
-			parameter = memory.getDataList()[PC.getData()+1];
-			System.out.println("Instruction: "+instruction+" "+parameter);
+		if (hasRRformat(instruction)) {
+			parameter1 = memory.getDataList()[PC.getData()+1];
+			parameter2 = memory.getDataList()[PC.getData()+2];
+			
+			System.out.println("Instruction: "+instruction+" %REG"+parameter1 + " %REG"+parameter2);
 		}
-		else
-			System.out.println("Instruction: "+instruction);
-		if ("read".equals(instruction))
-			System.out.println("memory["+parameter+"]="+memory.getDataList()[parameter]);
-		
+		if (hasMRformat(instruction)) {
+			parameter1 = memory.getDataList()[PC.getData()+1];
+			parameter2 = memory.getDataList()[PC.getData()+2];
+			
+			System.out.println("Instruction: "+instruction+" mem["+parameter1+"] %REG"+parameter2);
+		}
+		if (hasRMformat(instruction)) {
+			parameter1 = memory.getDataList()[PC.getData()+1];
+			parameter2 = memory.getDataList()[PC.getData()+2];
+			
+			System.out.println("Instruction: "+instruction+" %REG"+parameter1 + " mem["+parameter2+"]");
+		}
+		if (hasIMMformat(instruction)) {
+			parameter1 = memory.getDataList()[PC.getData()+1];
+			parameter2 = memory.getDataList()[PC.getData()+2];
+			
+			System.out.println("Instruction: "+instruction+" "+parameter1 + " %REG"+parameter2);
+		}
+		if (hasRformat(instruction)) {
+			parameter1 = memory.getDataList()[PC.getData()+1];
+			
+			System.out.println("Instruction: "+instruction+" %REG"+parameter1);
+		}
+		if (hasMformat(instruction)) {
+			parameter1 = memory.getDataList()[PC.getData()+1];
+			
+			System.out.println("Instruction: "+instruction+" mem["+parameter1+"]");
+		}
+		if (hasRRMformat(instruction)) {
+			parameter1 = memory.getDataList()[PC.getData()+1];
+			parameter2 = memory.getDataList()[PC.getData()+2];
+			parameter3 = memory.getDataList()[PC.getData()+3];
+			
+			System.out.println("Instruction: "+instruction+" %REG"+parameter1 + " %REG"+parameter2+" mem["+parameter3+"]");
+		}		
 	}
 
 	/**
@@ -1370,8 +1406,17 @@ public class Architecture {
 	 */
 	private void fetch() {
 		PC.read();
+
+		ula.internalStore(1);
+		ula.read(1);
+		
 		memory.read();
+
+		ula.store(1);
+		ula.internalRead(1);
+
 		IR.store();
+
 		simulationFetch();
 	}
 
@@ -1384,6 +1429,10 @@ public class Architecture {
 			System.out.println("-------Fetch Phase------");
 			System.out.println("PC: "+PC.getData());
 			System.out.println("IR: "+IR.getData());
+			for(int i = 0; i < 10; i++){
+				System.out.print(memory.getDataList()[i] + " ");
+			}
+			System.out.println();
 		}
 	}
 
@@ -1395,10 +1444,68 @@ public class Architecture {
 	 * @return
 	 */
 	private boolean hasOperands(String instruction) {
-		if ("inc".equals(instruction)) //inc is the only one instruction having no operands
+		if ("inc".equals(instruction))
 			return false;
 		else
 			return true;
+	}
+
+	private boolean hasRRformat(String instruction) {
+		if ("add_rr".equals(instruction)) return true;
+		if ("sub_rr".equals(instruction)) return true;
+		if ("imul_rr".equals(instruction)) return true;
+		if ("move_rr".equals(instruction)) return true;
+
+		return false;
+	}
+
+	private boolean hasMRformat(String instruction) {
+		if ("add_mr".equals(instruction)) return true;
+		if ("sub_mr".equals(instruction)) return true;
+		if ("imul_mr".equals(instruction)) return true;
+		if ("move_mr".equals(instruction)) return true;
+
+		return false;
+	}
+
+	private boolean hasRMformat(String instruction) {
+		if ("add_rm".equals(instruction)) return true;
+		if ("sub_rm".equals(instruction)) return true;
+		if ("imul_rm".equals(instruction)) return true;
+		if ("move_rm".equals(instruction)) return true;
+
+		return false;
+	}
+
+	private boolean hasIMMformat(String instruction) {
+		if ("add_imm".equals(instruction)) return true;
+		if ("sub_imm".equals(instruction)) return true;
+		if ("move_imm".equals(instruction)) return true;
+
+		return false;
+	}
+
+	private boolean hasRformat(String instruction) {
+		if ("inc_r".equals(instruction)) return true;
+
+		return false;
+	}
+
+	private boolean hasMformat(String instruction) {
+		if ("jmp".equals(instruction)) return true;
+		if ("jn".equals(instruction)) return true;
+		if ("jz".equals(instruction)) return true;
+
+		return false;
+	}
+
+	private boolean hasRRMformat(String instruction) {
+		if ("jeq".equals(instruction)) return true;
+		if ("jneq".equals(instruction)) return true;
+		if ("jgt".equals(instruction)) return true;
+		if ("jlw".equals(instruction)) return true;
+
+		return false;
 	}
 
 	/**
