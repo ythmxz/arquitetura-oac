@@ -1,0 +1,7 @@
+move 6 %REG0
+move 4 %REG1
+label:
+inc %REG1
+jneq %REG0 %REG1 label
+move %REG0 %REG2
+move %REG1 %REG3
