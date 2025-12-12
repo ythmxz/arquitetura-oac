@@ -14,20 +14,20 @@ import components.Register;
 import components.Ula;
 
 public class Architecture {
-	
+
 	private boolean simulation; //this boolean indicates if the execution is done in simulation mode.
 								//simulation mode shows the components' status after each instruction
-	
-	
+
+
 	private boolean halt;
 
 	private Bus extbus1;
 	private Bus intbus1;
-	
+
 	private Memory memory;
 	private Memory statusMemory;
 	private int memorySize;
-	
+
 	private Register PC;
 	private Register IR;
 	private Register StkTOP;
@@ -42,11 +42,11 @@ public class Architecture {
 
 	private Ula ula;
 	private Demux demux; //only for multiple register purposes
-	
+
 	private ArrayList<String> commandsList;
 	private ArrayList<Register> registersList;
-	
-	
+
+
 	/**
 	 * Instanciates all components in this architecture
 	 */
@@ -60,24 +60,24 @@ public class Architecture {
 		IR = new Register("IR", intbus1, intbus1);
 		StkTOP = new Register("StkTOP", intbus1, intbus1);
 		StkBOT = new Register("StkBOT", intbus1, intbus1);
-		
+
 		REG0 = new Register("REG0", intbus1, intbus1);
 		REG1 = new Register ("REG1", intbus1, intbus1);
 		REG2 = new Register("REG2", intbus1, intbus1);
 		REG3 = new Register ("REG3", intbus1, intbus1);
-		
+
 		Flags = new Register(2, intbus1);
 
 		fillRegistersList();
 
 		ula = new Ula(extbus1, intbus1);
-		
+
 		statusMemory = new Memory(2, intbus1);
 		memorySize = 128;
 		memory = new Memory(memorySize, extbus1);
-		
+
 		demux = new Demux(); //this bus is used only for multiple register operations
-		
+
 		fillCommandsList();
 	}
 
@@ -97,7 +97,7 @@ public class Architecture {
 		registersList.add(IR);
 		registersList.add(StkTOP);
 		registersList.add(StkBOT);
-		
+
 		registersList.add(Flags);
 	}
 
@@ -106,15 +106,15 @@ public class Architecture {
 	 */
 	public Architecture() {
 		componentsInstances();
-		
+
 		//by default, the execution method is never simulation mode
 		simulation = false;
 	}
 
-	
+
 	public Architecture(boolean sim) {
 		componentsInstances();
-		
+
 		//in this constructor we can set the simoualtion mode on or off
 		simulation = sim;
 	}
@@ -122,7 +122,7 @@ public class Architecture {
 
 
 	//getters
-	
+
 	protected Bus getExtbus1() {
 		return extbus1;
 	}
@@ -166,7 +166,7 @@ public class Architecture {
 	protected Register getREG3() {
 		return REG3;
 	}
-	
+
 	protected Register getFlags() {
 		return Flags;
 	}
@@ -206,7 +206,7 @@ public class Architecture {
 		commandsList.add("move_rr");   //13
 		commandsList.add("move_imm");   //14
 
-		commandsList.add("inc_r");   //15	
+		commandsList.add("inc_r");   //15
 
 		commandsList.add("jmp");   //16
 		commandsList.add("jn");    //17
@@ -219,12 +219,9 @@ public class Architecture {
 		commandsList.add("jlw");    //22
 	}
 
-	
-	/**
-	 * This method is used after some ULA operations, setting the flags bits according the result.
-	 * @param result is the result of the operation
-	 * NOT TESTED!!!!!!!
-	 */
+
+	/// @brief This method is used after some ULA operations, setting the flags bits according the result. NOT TESTED!!!!!!!
+	/// @param result is the result of the operation
 	private void setStatusFlags(int result) {
 		Flags.setBit(0, 0);
 		Flags.setBit(1, 0);
@@ -236,13 +233,14 @@ public class Architecture {
 		}
 	}
 
+	/// @brief This method adds the contents of regA and regB, storing the result in regB
 	public void add_rr() {
 		PC.read();                     // PC -> bus(int)
 		ula.internalStore(1);          // ULA(1) <- bus(int)
 		ula.inc();                     // ULA++
 		ula.internalRead(1);           // ULA(1) -> bus (int)
 		PC.store();                    // PC <- bus(int)
-		
+
 		ula.internalStore(0);          // ULA(0) <- bus(int)
 		ula.read(0);                   // ULA(0) -> bus(ext)
 		memory.read();                 // Mem(r) <- bus(ext)
@@ -251,13 +249,13 @@ public class Architecture {
 		demux.setValue(intbus1.get());  // RegID <- bus(int)
 		registersRead();               // Reg(x) -> bus(int) (demux)
 		IR.store();                    // IR <- bus(int)
-		
+
 		PC.read();                     // PC -> bus(int)
 		ula.internalStore(1);          // ULA(1) <- bus(int)
 		ula.inc();                     // ULA++
 		ula.internalRead(1);           // ULA(1) -> bus (int)
 		PC.store();                    // PC <- bus(int)
-		
+
 		ula.internalStore(0);          // ULA(0) <- bus(int)
 		ula.read(0);                   // ULA(0) -> bus(ext)
 		memory.read();                 // Mem(r) <- bus(ext)
@@ -272,21 +270,22 @@ public class Architecture {
 		ula.internalRead(1);           // ULA(1) -> bus (int)
 		setStatusFlags(intbus1.get());  // Flags
 		registersStore();              // RegX <- bus (int)
-		
+
 		PC.read();                     // PC -> bus(int)
 		ula.internalStore(1);          // ULA(1) <- bus(int)
 		ula.inc();                     // ULA++
 		ula.internalRead(1);           // ULA(1) -> bus (int)
 		PC.store();                    // PC <- bus(int)
 	}
-	
+
+	/// @brief This method adds the contents of memory address and reg, storing the result in reg
 	public void add_mr(){
 		PC.read();                     // PC -> bus(int)
 		ula.internalStore(1);          // ULA(1) <- bus(int)
 		ula.inc();                     // ULA++
 		ula.internalRead(1);           // ULA(1) -> bus (int)
 		PC.store();                    // PC <- bus(int)
-		
+
 		ula.internalStore(0);          // ULA(0) <- bus(int)
 		ula.read(0);                   // ULA(0) -> bus(ext)
 		memory.read();                 // Mem(r) <- bus(ext)
@@ -294,13 +293,13 @@ public class Architecture {
 		ula.store(0);                  // ULA(0) <- bus(ext)
 		ula.internalRead(0);           // ULA(0) -> bus(int)
 		IR.store();                    // IR <- bus(int)
-		
+
 		PC.read();                     // PC -> bus(int)
 		ula.internalStore(1);          // ULA(1) <- bus(int)
 		ula.inc();                     // ULA++
 		ula.internalRead(1);           // ULA(1) -> bus (int)
 		PC.store();                    // PC <- bus(int)
-		
+
 		ula.internalStore(0);          // ULA(0) <- bus(int)
 		ula.read(0);                   // ULA(0) -> bus(ext)
 		memory.read();                 // Mem(r) <- bus(ext)
@@ -315,21 +314,22 @@ public class Architecture {
 		ula.internalRead(1);           // ULA(1) -> bus (int)
 		setStatusFlags(intbus1.get());  // Flags
 		registersStore();              // RegX <- bus (int)
-		
+
 		PC.read();                     // PC -> bus(int)
 		ula.internalStore(1);          // ULA(1) <- bus(int)
 		ula.inc();                     // ULA++
 		ula.internalRead(1);           // ULA(1) -> bus (int)
 		PC.store();                    // PC <- bus(int)
 	}
-	
-	public void add_rm() {			   
+
+	/// @brief This method adds the contents of reg and memory address, storing the result in memory address
+	public void add_rm() {
 		PC.read();                     // PC -> bus(int)
 		ula.internalStore(1);          // ULA(1) <- bus(int)
 		ula.inc();                     // ULA++
 		ula.internalRead(1);           // ULA(1) -> bus (int)
 		PC.store();                    // PC <- bus(int)
-		
+
 		ula.internalStore(0);          // ULA(0) <- bus(int)
 		ula.read(0);                   // ULA(0) -> bus(ext)
 		memory.read();                 // Mem(r) <- bus(ext)
@@ -338,13 +338,13 @@ public class Architecture {
 		demux.setValue(intbus1.get());  // RegID <- bus(int)
 		registersRead();               // Reg(x) -> bus (int) (demux)
 		IR.store();                    // IR <- bus(int)
-		
+
 		PC.read();                     // PC -> bus(int)
 		ula.internalStore(1);          // ULA(1) <- bus(int)
 		ula.inc();                     // ULA++
 		ula.internalRead(1);           // ULA(1) -> bus (int)
 		PC.store();                    // PC <- bus(int)
-		
+
 		ula.internalStore(0);          // ULA(0) <- bus(int)
 		ula.read(0);                   // ULA(0) -> bus(ext)
 		memory.read();                 // Mem(r) <- bus(ext)
@@ -361,7 +361,7 @@ public class Architecture {
 		ula.read(1);                   // ULA(1) -> bus (ext)
 		setStatusFlags(intbus1.get());  // Flags
 		memory.store();                // Mem(store) <- bus(ext)
-		
+
 		PC.read();                     // PC -> bus(int)
 		ula.internalStore(1);          // ULA(1) <- bus(int)
 		ula.inc();                     // ULA++
@@ -369,26 +369,27 @@ public class Architecture {
 		PC.store();                    // PC <- bus(int)
 	}
 
-	public void add_imm() {			   
+	/// @brief This method adds the contents of immediate value and reg, storing the result in reg
+	public void add_imm() {
 		PC.read();                    // PC -> bus(int)
 		ula.internalStore(1);         // ULA(1) <- bus(int)
 		ula.inc();                    // ULA++
 		ula.internalRead(1);          // ULA(1) -> bus (int)
 		PC.store();                   // PC <- bus(int)
-		
+
 		ula.internalStore(0);         // ULA(0) <- bus(int)
 		ula.read(0);                  // ULA(0) -> bus(ext)
 		memory.read();                // Mem(r) <- bus(ext)
 		ula.store(0);                 // ULA(0) <- bus(ext)
 		ula.internalRead(0);          // ULA(0) -> bus(int)
 		IR.store();                   // IR <- bus(int)
-		
+
 		PC.read();                    // PC -> bus(int)
 		ula.internalStore(1);         // ULA(1) <- bus(int)
 		ula.inc();                    // ULA++
 		ula.internalRead(1);          // ULA(1) -> bus (int)
 		PC.store();                   // PC <- bus(int)
-		
+
 		ula.internalStore(0);         // ULA(0) <- bus(int)
 		ula.read(0);                  // ULA(0) -> bus(ext)
 		memory.read();                // Mem(r) <- bus(ext)
@@ -403,7 +404,7 @@ public class Architecture {
 		ula.internalRead(1);          // ULA(1) -> bus (int)
 		setStatusFlags(intbus1.get()); // Flags
 		registersStore();             // RegX <- bus (int)
-		
+
 		PC.read();                    // PC -> bus(int)
 		ula.internalStore(1);         // ULA(1) <- bus(int)
 		ula.inc();                    // ULA++
@@ -411,13 +412,14 @@ public class Architecture {
 		PC.store();                   // PC <- bus(int)
 	}
 
-	public void sub_rr() {				   
+	/// @brief This method subtracts the contents of regB from regA, storing the result in regB
+	public void sub_rr() {
 		PC.read();                         // PC -> bus(int)
 		ula.internalStore(1);              // ULA(1) <- bus(int)
 		ula.inc();                         // ULA++
 		ula.internalRead(1);               // ULA(1) -> bus (int)
 		PC.store();                        // PC <- bus(int)
-		
+
 		ula.internalStore(0);              // ULA(0) <- bus(int)
 		ula.read(0);                       // ULA(0) -> bus(ext)
 		memory.read();                     // Mem(r) <- bus(ext)
@@ -426,13 +428,13 @@ public class Architecture {
 		demux.setValue(intbus1.get());      // RegID <- bus(int)
 		registersRead();                   // Reg(x) -> bus(int) (demux)
 		IR.store();                        // IR <- bus(int)
-		
+
 		PC.read();                         // PC -> bus(int)
 		ula.internalStore(1);              // ULA(1) <- bus(int)
 		ula.inc();                         // ULA++
 		ula.internalRead(1);               // ULA(1) -> bus (int)
 		PC.store();                        // PC <- bus(int)
-		
+
 		ula.internalStore(0);              // ULA(0) <- bus(int)
 		ula.read(0);                       // ULA(0) -> bus(ext)
 		memory.read();                     // Mem(r) <- bus(ext)
@@ -447,7 +449,7 @@ public class Architecture {
 		ula.internalRead(1);               // ULA(1) -> bus (int)
 		setStatusFlags(intbus1.get());      // Flags
 		registersStore();                  // RegX <- bus (int)
-		
+
 		PC.read();                         // PC -> bus(int)
 		ula.internalStore(1);              // ULA(1) <- bus(int)
 		ula.inc();                         // ULA++
@@ -455,13 +457,14 @@ public class Architecture {
 		PC.store();                        // PC <- bus(int)
 	}
 
-	public void sub_mr() { 			  
+	/// @brief This method subtracts the contents of reg from memory address, storing the result in reg
+	public void sub_mr() {
 		PC.read();                    // PC -> bus(int)
 		ula.internalStore(1);         // ULA(1) <- bus(int)
 		ula.inc();                    // ULA++
 		ula.internalRead(1);          // ULA(1) -> bus (int)
 		PC.store();                   // PC <- bus(int)
-		
+
 		ula.internalStore(0);         // ULA(0) <- bus(int)
 		ula.read(0);                  // ULA(0) -> bus(ext)
 		memory.read();                // Mem(r) <- bus(ext)
@@ -469,13 +472,13 @@ public class Architecture {
 		ula.store(0);                 // ULA(0) <- bus(ext)
 		ula.internalRead(0);          // ULA(0) -> bus(int)
 		IR.store();                   // IR <- bus(int)
-		
+
 		PC.read();                    // PC -> bus(int)
 		ula.internalStore(1);         // ULA(1) <- bus(int)
 		ula.inc();                    // ULA++
 		ula.internalRead(1);          // ULA(1) -> bus (int)
 		PC.store();                   // PC <- bus(int)
-		
+
 		ula.internalStore(0);         // ULA(0) <- bus(int)
 		ula.read(0);                  // ULA(0) -> bus(ext)
 		memory.read();                // Mem(r) <- bus(ext)
@@ -490,7 +493,7 @@ public class Architecture {
 		ula.internalRead(1);          // ULA(1) -> bus (int)
 		setStatusFlags(intbus1.get()); // Flags
 		registersStore();             // RegX <- bus (int)
-		
+
 		PC.read();                    // PC -> bus(int)
 		ula.internalStore(1);         // ULA(1) <- bus(int)
 		ula.inc();                    // ULA++
@@ -498,13 +501,14 @@ public class Architecture {
 		PC.store();                   // PC <- bus(int)
 	}
 
-	public void sub_rm() {			   
+	/// @brief This method subtracts the contents of memory address from reg, storing the result in memory address
+	public void sub_rm() {
 		PC.read();                     // PC -> bus(int)
 		ula.internalStore(1);          // ULA(1) <- bus(int)
 		ula.inc();                     // ULA++
 		ula.internalRead(1);           // ULA(1) -> bus (int)
 		PC.store();                    // PC <- bus(int)
-		
+
 		ula.internalStore(0);          // ULA(0) <- bus(int)
 		ula.read(0);                   // ULA(0) -> bus(ext)
 		memory.read();                 // Mem(r) <- bus(ext)
@@ -513,13 +517,13 @@ public class Architecture {
 		demux.setValue(intbus1.get());  // RegID <- bus(int)
 		registersRead();               // Reg(x) -> bus (int) (demux)
 		IR.store();                    // IR <- bus(int)
-		
+
 		PC.read();                     // PC -> bus(int)
 		ula.internalStore(1);          // ULA(1) <- bus(int)
 		ula.inc();                     // ULA++
 		ula.internalRead(1);           // ULA(1) -> bus (int)
 		PC.store();                    // PC <- bus(int)
-		
+
 		ula.internalStore(0);          // ULA(0) <- bus(int)
 		ula.read(0);                   // ULA(0) -> bus(ext)
 		memory.read();                 // Mem(r) <- bus(ext)
@@ -536,34 +540,35 @@ public class Architecture {
 		ula.read(1);                   // ULA(1) -> bus (ext)
 		setStatusFlags(intbus1.get());  // Flags
 		memory.store();                // Mem(store) <- bus(ext)
-		
+
 		PC.read();                     // PC -> bus(int)
 		ula.internalStore(1);          // ULA(1) <- bus(int)
 		ula.inc();                     // ULA++
 		ula.internalRead(1);           // ULA(1) -> bus (int)
 		PC.store();                    // PC <- bus(int)
 	}
-	
+
+	/// @brief This method subtracts the contents of immediate value from reg, storing the result in reg
 	public void sub_imm(){
 		PC.read();                    // PC -> bus(int)
 		ula.internalStore(1);         // ULA(1) <- bus(int)
 		ula.inc();                    // ULA++
 		ula.internalRead(1);          // ULA(1) -> bus (int)
 		PC.store();                   // PC <- bus(int)
-		
+
 		ula.internalStore(0);         // ULA(0) <- bus(int)
 		ula.read(0);                  // ULA(0) -> bus(ext)
 		memory.read();                // Mem(r) <- bus(ext)
 		ula.store(0);                 // ULA(0) <- bus(ext)
 		ula.internalRead(0);          // ULA(0) -> bus(int)
 		IR.store();                   // IR <- bus(int)
-		
+
 		PC.read();                    // PC -> bus(int)
 		ula.internalStore(1);         // ULA(1) <- bus(int)
 		ula.inc();                    // ULA++
 		ula.internalRead(1);          // ULA(1) -> bus (int)
 		PC.store();                   // PC <- bus(int)
-		
+
 		ula.internalStore(0);         // ULA(0) <- bus(int)
 		ula.read(0);                  // ULA(0) -> bus(ext)
 		memory.read();                // Mem(r) <- bus(ext)
@@ -578,7 +583,7 @@ public class Architecture {
 		ula.internalRead(1);          // ULA(1) -> bus (int)
 		setStatusFlags(intbus1.get()); // Flags
 		registersStore();             // RegX <- bus (int)
-		
+
 		PC.read();                    // PC -> bus(int)
 		ula.internalStore(1);         // ULA(1) <- bus(int)
 		ula.inc();                    // ULA++
@@ -587,15 +592,15 @@ public class Architecture {
 	}
 
 	public void imul_mr(){
-		
+
 	}
 
 	public void imul_rm(){
-		
+
 	}
 
 	public void imul_rr(){
-		
+
 	}
 
 	public void move_mr() { // MOVE mem -> reg
@@ -1185,7 +1190,7 @@ public class Architecture {
 		ula.inc();
 		ula.internalRead(1);
 		PC.store();
-		
+
 		// put the address of the next instruction in the status memory (slot 1, when regA<=regB)
 		PC.read();
 		statusMemory.storeIn0();
@@ -1195,7 +1200,7 @@ public class Architecture {
 		statusMemory.read();
 		PC.store();
 	}
-	
+
 	public ArrayList<Register> getRegistersList() {
 		return registersList;
 	}
@@ -1207,7 +1212,7 @@ public class Architecture {
 	private void registersRead() {
 		registersList.get(demux.getValue()).read();
 	}
-	
+
 	/**
 	 * This method performs an (internal) read from a register into the register list.
 	 * The register id must be in the demux bus
@@ -1215,7 +1220,7 @@ public class Architecture {
 	private void registersInternalRead() {
 		registersList.get(demux.getValue()).internalRead();;
 	}
-	
+
 	/**
 	 * This method performs an (external) store toa register into the register list.
 	 * The register id must be in the demux bus
@@ -1223,7 +1228,7 @@ public class Architecture {
 	private void registersStore() {
 		registersList.get(demux.getValue()).store();
 	}
-	
+
 	/**
 	 * This method performs an (internal) store toa register into the register list.
 	 * The register id must be in the demux bus
@@ -1239,10 +1244,10 @@ public class Architecture {
 	 * stores it into the memory
 	 * NOT TESTED
 	 * @param filename
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public void readExec(String filename) throws IOException {
-		   BufferedReader br = new BufferedReader(new		 
+		   BufferedReader br = new BufferedReader(new
 		   FileReader(filename+".dxf"));
 		   String linha;
 		   int i=0;
@@ -1255,7 +1260,7 @@ public class Architecture {
 			}
 			br.close();
 	}
-	
+
 	/**
 	 * This method executes a program that is stored in the memory
 	 */
@@ -1267,7 +1272,7 @@ public class Architecture {
 		}
 
 	}
-	
+
 
 	/**
 	 * This method implements The decode proccess,
@@ -1322,7 +1327,7 @@ public class Architecture {
 	/**
 	 * This method is used to show the components status in simulation conditions
 	 * NOT TESTED
-	 * @param command 
+	 * @param command
 	 */
 	private void simulationDecodeExecuteBefore(int command) {
 		System.out.println("----------BEFORE Decode and Execute phases--------------");
@@ -1341,49 +1346,49 @@ public class Architecture {
 		if (hasRRformat(instruction)) {
 			parameter1 = memory.getDataList()[PC.getData()+1];
 			parameter2 = memory.getDataList()[PC.getData()+2];
-			
+
 			System.out.println("Instruction: "+instruction+" %REG"+parameter1 + " %REG"+parameter2);
 		}
 		if (hasMRformat(instruction)) {
 			parameter1 = memory.getDataList()[PC.getData()+1];
 			parameter2 = memory.getDataList()[PC.getData()+2];
-			
+
 			System.out.println("Instruction: "+instruction+" mem["+parameter1+"] %REG"+parameter2);
 		}
 		if (hasRMformat(instruction)) {
 			parameter1 = memory.getDataList()[PC.getData()+1];
 			parameter2 = memory.getDataList()[PC.getData()+2];
-			
+
 			System.out.println("Instruction: "+instruction+" %REG"+parameter1 + " mem["+parameter2+"]");
 		}
 		if (hasIMMformat(instruction)) {
 			parameter1 = memory.getDataList()[PC.getData()+1];
 			parameter2 = memory.getDataList()[PC.getData()+2];
-			
+
 			System.out.println("Instruction: "+instruction+" "+parameter1 + " %REG"+parameter2);
 		}
 		if (hasRformat(instruction)) {
 			parameter1 = memory.getDataList()[PC.getData()+1];
-			
+
 			System.out.println("Instruction: "+instruction+" %REG"+parameter1);
 		}
 		if (hasMformat(instruction)) {
 			parameter1 = memory.getDataList()[PC.getData()+1];
-			
+
 			System.out.println("Instruction: "+instruction+" mem["+parameter1+"]");
 		}
 		if (hasRRMformat(instruction)) {
 			parameter1 = memory.getDataList()[PC.getData()+1];
 			parameter2 = memory.getDataList()[PC.getData()+2];
 			parameter3 = memory.getDataList()[PC.getData()+3];
-			
+
 			System.out.println("Instruction: "+instruction+" %REG"+parameter1 + " %REG"+parameter2+" mem["+parameter3+"]");
-		}		
+		}
 	}
 
 	/**
 	 * This method is used to show the components status in simulation conditions
-	 * NOT TESTED 
+	 * NOT TESTED
 	 */
 	private void simulationDecodeExecuteAfter() {
 		String instruction;
@@ -1409,7 +1414,7 @@ public class Architecture {
 
 		ula.internalStore(1);
 		ula.read(1);
-		
+
 		memory.read();
 
 		ula.store(1);
@@ -1436,7 +1441,7 @@ public class Architecture {
 	 * This method is used to show in a correct way the operands (if there is any) of instruction,
 	 * when in simulation mode
 	 * NOT TESTED!!!!!
-	 * @param instruction 
+	 * @param instruction
 	 * @return
 	 */
 	private boolean hasOperands(String instruction) {
@@ -1513,12 +1518,12 @@ public class Architecture {
 	public int getMemorySize() {
 		return memorySize;
 	}
-	
+
 	public static void main(String[] args) throws IOException {
-		Architecture arch = new Architecture(true);
-		arch.readExec("program");
+		Architecture arch = (args.length == 2 && args[1].equals("true")) ? new Architecture(true) : new Architecture();
+		arch.readExec(args[0]);
 		arch.controlUnitEexec();
 	}
-	
+
 
 }

@@ -27,9 +27,9 @@ java -cp bin assembler.Assembler <arquivo.dsf>
 O "arquivo.dsf" é lido pelo assembler e transformado em um executável "arquivo.dxf".
 
 ```
-java -cp bin architecture.Architecture
+java -cp bin architecture.Architecture <arquivo.dxf> <simulação>
 ```
 
-O arquivo "program.dxf" e lido em modo de simulação, ou seja, instrução por instrução.
+O "arquivo.dxf" é lido em modo de simulação (se for true) ou direto (se for false).
 
 O argumento "-cp bin" serve para rodar um arquivo que não está na pasta atual. Os comandos assumem que você está na pasta raiz do programa.
