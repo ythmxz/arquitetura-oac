@@ -1163,8 +1163,6 @@ public class Architecture {
 		ula.internalRead(1);
 		setStatusFlags(intbus1.get());
 
-		System.out.println("sub = " + intbus1.get());
-
 		// pc++
 		PC.read();
 		ula.internalStore(1);
@@ -1175,12 +1173,10 @@ public class Architecture {
 		// get jump address from memory, and put it into ula(0)
 		ula.read(1);
 		memory.read();
-		System.out.println("memoria (indo pro stsmem1): "+ extbus1.get());
 		ula.store(0);
 
 		// put the address in the status memory (slot 0, when regA>regB)
 		ula.internalRead(0);
-		System.out.println("busint (indo pro stsmem1): "+ intbus1.get());
 		statusMemory.storeIn1();
 
 		// pc++
@@ -1189,21 +1185,14 @@ public class Architecture {
 		ula.inc();
 		ula.internalRead(1);
 		PC.store();
-		System.out.println("busint (indo pro stsmem0): "+ intbus1.get());
 		
 		// put the address of the next instruction in the status memory (slot 1, when regA<=regB)
 		PC.read();
-		System.out.println("busint (indo pro stsmem0): "+ intbus1.get());
 		statusMemory.storeIn0();
 
 		// jump to the address (based on the negative flag)
-		// System.out.println("1 stsmem0: "+statusMemory.getDataList()[0]);
-		// System.out.println("2 stsmem1: "+statusMemory.getDataList()[1]);
 		intbus1.put(Flags.getBit(1));
-		System.out.println("saida do flag negativo: "+ intbus1.get());
 		statusMemory.read();
-		System.out.println("intbus depois do statusmem read: "+ intbus1.get());
-		System.out.println("extbus depois do statusmem read: "+ extbus1.get());
 		PC.store();
 	}
 	
@@ -1440,10 +1429,6 @@ public class Architecture {
 			System.out.println("-------Fetch Phase------");
 			System.out.println("PC: "+PC.getData());
 			System.out.println("IR: "+IR.getData());
-			for(int i = 0; i < 10; i++){
-				System.out.print(memory.getDataList()[i] + " ");
-			}
-			System.out.println();
 		}
 	}
 
