@@ -1,0 +1,7 @@
+move 5 %REG0
+label:
+move 5 %REG1
+sub %REG0 %REG1
+move %REG1 %REG0
+jz label
+move %REG0 %REG1

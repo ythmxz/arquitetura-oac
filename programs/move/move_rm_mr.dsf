@@ -1,0 +1,4 @@
+a
+move 67 %REG0
+move %REG0 a
+move a %REG1

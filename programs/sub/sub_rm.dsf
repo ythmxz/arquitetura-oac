@@ -1,0 +1,6 @@
+a
+move 2 %REG0
+move %REG0 a
+move 5 %REG0
+sub %REG0 a
+move a %REG0

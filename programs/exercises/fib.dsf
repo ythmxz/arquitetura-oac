@@ -1,0 +1,17 @@
+termoFinal
+move 7 %REG0
+move -1 %REG1
+move 1 %REG2
+move 0 %REG3
+laco:
+add %REG1 %REG3
+add %REG2 %REG3
+move %REG2 %REG1
+move %REG3 %REG2
+move 1 %REG3
+sub %REG0 %REG3
+move %REG3 %REG0
+move 0 %REG3
+jgt %REG0 %REG3 laco
+jeq %REG0 %REG3 laco
+move %REG2 termoFinal

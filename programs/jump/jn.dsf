@@ -1,0 +1,5 @@
+move -21 %REG0
+label:
+add 10 %REG0
+jn label
+move %REG0 %REG1

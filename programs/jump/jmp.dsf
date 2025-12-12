@@ -1,0 +1,5 @@
+inc %REG0
+jmp label
+inc %REG0
+label:
+move %REG0 %REG1

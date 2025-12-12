@@ -1,0 +1,3 @@
+move 2 %REG0
+move 3 %REG1
+add %REG0 %REG1

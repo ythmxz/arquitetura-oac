@@ -1,0 +1,2 @@
+move 2 %REG0
+sub 5 %REG0
